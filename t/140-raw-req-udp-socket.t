@@ -176,7 +176,7 @@ receive stream response error: timeout
 mysock handler aborted
 --- no_error_log
 [error]
---- wait: 1.1
+--- wait: 0.3
 
 
 
