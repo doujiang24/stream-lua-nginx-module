@@ -216,8 +216,7 @@ ngx_stream_lua_udp_req_socket(lua_State *L)
     c = s->connection;
 
     if (c->type != SOCK_DGRAM) {
-        return luaL_error(L, "socket api does not match connection transport",
-                          lua_gettop(L));
+        return luaL_error(L, "socket api does not match connection transport");
     }
 
 #if !defined(nginx_version) || nginx_version < 1003013
@@ -242,7 +241,7 @@ ngx_stream_lua_udp_req_socket(lua_State *L)
     ctx->acquired_raw_req_socket = 1;
 #endif
 
-    lua_createtable(L, 3 /* narr */, 1 /* nrec */); /* the object */
+    lua_createtable(L, 1 /* narr */, 1 /* nrec */); /* the object */
 
     lua_pushlightuserdata(L, &ngx_stream_lua_raw_req_socket_metatable_key);
 
@@ -337,7 +336,7 @@ ngx_stream_lua_socket_udp(lua_State *L)
     ngx_stream_lua_check_context(L, ctx, NGX_STREAM_LUA_CONTEXT_CONTENT
                                  | NGX_STREAM_LUA_CONTEXT_TIMER);
 
-    lua_createtable(L, 3 /* narr */, 1 /* nrec */);
+    lua_createtable(L, 2 /* narr */, 1 /* nrec */);
     lua_pushlightuserdata(L, &ngx_stream_lua_socket_udp_metatable_key);
     lua_rawget(L, LUA_REGISTRYINDEX);
     lua_setmetatable(L, -2);
@@ -1164,9 +1163,9 @@ ngx_stream_lua_socket_udp_receive(lua_State *L)
 
     if (u->raw_downstream && !u->connected) {
         u->received = c->buffer->last - c->buffer->pos;
-        c->buffer->pos =
-            ngx_copy(ngx_stream_lua_socket_udp_buffer, c->buffer->pos,
-                     u->received);
+        c->buffer->pos = ngx_copy(ngx_stream_lua_socket_udp_buffer,
+                                  c->buffer->pos, u->received);
+
         ngx_stream_lua_socket_udp_handle_success(s, u);
         u->connected = 1;
         rc = NGX_OK;
@@ -1511,9 +1510,8 @@ ngx_stream_lua_socket_udp_handler(ngx_event_t *ev)
     c = ev->data;
     u = c->data;
     s = u->session;
-    c = s->connection;
 
-    ngx_log_debug1(NGX_LOG_DEBUG_STREAM, c->log, 0,
+    ngx_log_debug1(NGX_LOG_DEBUG_STREAM, s->connection->log, 0,
                    "stream lua udp socket handler, wev %d", (int) ev->write);
 
     u->read_event_handler(s, u);
