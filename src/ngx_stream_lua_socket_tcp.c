@@ -364,6 +364,14 @@ ngx_stream_lua_inject_socket_tcp_api(ngx_log_t *log, lua_State *L)
 }
 
 
+void
+ngx_stream_lua_inject_tcp_req_socket_api(lua_State *L)
+{
+    lua_pushcfunction(L, ngx_stream_lua_tcp_req_socket);
+    lua_setfield(L, -2, "socket");
+}
+
+
 static int
 ngx_stream_lua_socket_tcp(lua_State *L)
 {
@@ -3910,22 +3918,14 @@ ngx_stream_lua_socket_cleanup_compiled_pattern(lua_State *L)
 }
 
 
-void
-ngx_stream_lua_inject_tcp_req_socket_api(lua_State *L)
-{
-    lua_pushcfunction(L, ngx_stream_lua_tcp_req_socket);
-    lua_setfield(L, -2, "socket");
-}
-
-
 static int
 ngx_stream_lua_tcp_req_socket(lua_State *L)
 {
     int                              n, raw;
-    ngx_stream_session_t            *s;
     ngx_peer_connection_t           *pc;
     ngx_stream_lua_srv_conf_t       *lscf;
     ngx_connection_t                *c;
+    ngx_stream_session_t            *s;
     ngx_stream_lua_ctx_t            *ctx;
     ngx_stream_lua_co_ctx_t         *coctx;
     ngx_stream_lua_cleanup_t        *cln;
@@ -3957,8 +3957,7 @@ ngx_stream_lua_tcp_req_socket(lua_State *L)
     c = s->connection;
 
     if (c->type != SOCK_STREAM) {
-        return luaL_error(L, "socket api does not match connection transport",
-                          lua_gettop(L));
+        return luaL_error(L, "socket api does not match connection transport");
     }
 
 #if !defined(nginx_version) || nginx_version < 1003013
