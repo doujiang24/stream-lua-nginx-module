@@ -415,6 +415,7 @@ ngx_stream_lua_socket_tcp_connect(lua_State *L)
     ngx_str_t                    host;
     int                          port;
     ngx_resolver_ctx_t          *rctx, temp;
+    ngx_stream_core_srv_conf_t  *cscf;
     int                          saved_top;
     int                          n;
     u_char                      *p;
@@ -675,8 +676,10 @@ ngx_stream_lua_socket_tcp_connect(lua_State *L)
         return rc;
     }
 
+    cscf = ngx_stream_get_module_srv_conf(s, ngx_stream_core_module);
+
     temp.name = host;
-    rctx = ngx_resolve_start(lscf->resolver, &temp);
+    rctx = ngx_resolve_start(cscf->resolver, &temp);
     if (rctx == NULL) {
         u->ft_type |= NGX_STREAM_LUA_SOCKET_FT_RESOLVER;
         lua_pushnil(L);
@@ -687,7 +690,7 @@ ngx_stream_lua_socket_tcp_connect(lua_State *L)
     if (rctx == NGX_NO_RESOLVER) {
         u->ft_type |= NGX_STREAM_LUA_SOCKET_FT_RESOLVER;
         lua_pushnil(L);
-        lua_pushfstring(L, "no lua_resolver defined to resolve \"%s\"",
+        lua_pushfstring(L, "no resolver defined to resolve \"%s\"",
                         host.data);
         return 2;
     }
@@ -698,7 +701,7 @@ ngx_stream_lua_socket_tcp_connect(lua_State *L)
 #endif
     rctx->handler = ngx_stream_lua_socket_resolve_handler;
     rctx->data = u;
-    rctx->timeout = lscf->resolver_timeout;
+    rctx->timeout = cscf->resolver_timeout;
 
     u->resolved->ctx = rctx;
     u->write_co_ctx = ctx->cur_co_ctx;

@@ -141,20 +141,6 @@ static ngx_command_t  ngx_stream_lua_commands[] = {
       NULL },
 #endif
 
-    { ngx_string("lua_resolver"),
-      NGX_STREAM_MAIN_CONF|NGX_STREAM_SRV_CONF|NGX_CONF_1MORE,
-      ngx_stream_lua_resolver,
-      NGX_STREAM_SRV_CONF_OFFSET,
-      0,
-      NULL },
-
-    { ngx_string("lua_resolver_timeout"),
-      NGX_STREAM_MAIN_CONF|NGX_STREAM_SRV_CONF|NGX_CONF_TAKE1,
-      ngx_conf_set_msec_slot,
-      NGX_STREAM_SRV_CONF_OFFSET,
-      offsetof(ngx_stream_lua_srv_conf_t, resolver_timeout),
-      NULL },
-
     { ngx_string("lua_socket_keepalive_timeout"),
       NGX_STREAM_MAIN_CONF|NGX_STREAM_SRV_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_msec_slot,
@@ -453,7 +439,6 @@ ngx_stream_lua_create_srv_conf(ngx_conf_t *cf)
     conf->enable_code_cache  = NGX_CONF_UNSET;
     conf->check_client_abort = NGX_CONF_UNSET;
 
-    conf->resolver_timeout = NGX_CONF_UNSET_MSEC;
     conf->keepalive_timeout = NGX_CONF_UNSET_MSEC;
     conf->connect_timeout = NGX_CONF_UNSET_MSEC;
     conf->send_timeout = NGX_CONF_UNSET_MSEC;
@@ -481,27 +466,6 @@ ngx_stream_lua_merge_srv_conf(ngx_conf_t *cf, void *parent, void *child)
 {
     ngx_stream_lua_srv_conf_t *prev = parent;
     ngx_stream_lua_srv_conf_t *conf = child;
-
-    ngx_conf_merge_msec_value(conf->resolver_timeout,
-                              prev->resolver_timeout, 30000);
-
-    if (conf->resolver == NULL) {
-
-        if (prev->resolver == NULL) {
-
-            /*
-             * create dummy resolver in stream {} context
-             * to inherit it in all servers
-             */
-
-            prev->resolver = ngx_resolver_create(cf, NULL, 0);
-            if (prev->resolver == NULL) {
-                return NGX_CONF_ERROR;
-            }
-        }
-
-        conf->resolver = prev->resolver;
-    }
 
     ngx_conf_merge_value(conf->enable_code_cache, prev->enable_code_cache, 1);
     ngx_conf_merge_value(conf->check_client_abort, prev->check_client_abort, 0);

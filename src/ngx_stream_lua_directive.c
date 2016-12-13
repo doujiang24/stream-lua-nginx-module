@@ -729,28 +729,6 @@ found:
 
 
 char *
-ngx_stream_lua_resolver(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
-{
-    ngx_stream_lua_srv_conf_t  *lscf = conf;
-
-    ngx_str_t  *value;
-
-    if (lscf->resolver) {
-        return "is duplicate";
-    }
-
-    value = cf->args->elts;
-
-    lscf->resolver = ngx_resolver_create(cf, &value[1], cf->args->nelts - 1);
-    if (lscf->resolver == NULL) {
-        return NGX_CONF_ERROR;
-    }
-
-    return NGX_CONF_OK;
-}
-
-
-char *
 ngx_stream_lua_code_cache(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
     char             *p = conf;

@@ -397,8 +397,8 @@ qr/warn\(\): time: \d+/
 === TEST 13: cosocket with resolver
 --- timeout: 10
 --- stream_config
-    lua_resolver $TEST_NGINX_RESOLVER;
-    lua_resolver_timeout 3s;
+    resolver $TEST_NGINX_RESOLVER;
+    resolver_timeout 3s;
 
     init_worker_by_lua_block {
         -- global

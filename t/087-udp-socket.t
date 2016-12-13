@@ -519,7 +519,7 @@ lua udp socket receive buffer size: 8192
 
 === TEST 11: access the google DNS server (using domain names)
 --- stream_server_config
-    lua_resolver $TEST_NGINX_RESOLVER ipv6=off;
+    resolver $TEST_NGINX_RESOLVER ipv6=off;
     content_by_lua_block {
         -- avoid flushing google in "check leak" testing mode:
         local counter = package.loaded.counter

@@ -38,7 +38,7 @@ ngx_stream_lua_init_worker(ngx_cycle_t *cycle)
     ngx_stream_conf_ctx_t       *conf_ctx, stream_ctx;
     ngx_stream_lua_srv_conf_t   *lscf, *top_lscf;
     ngx_stream_lua_main_conf_t  *lmcf;
-    ngx_stream_core_srv_conf_t  *cscf;
+    ngx_stream_core_srv_conf_t  *cscf, *top_cscf;
 
     lmcf = ngx_stream_cycle_get_module_main_conf(cycle, ngx_stream_lua_module);
 
@@ -54,6 +54,8 @@ ngx_stream_lua_init_worker(ngx_cycle_t *cycle)
     stream_ctx.main_conf = conf_ctx->main_conf;
 
     top_lscf = conf_ctx->srv_conf[ngx_stream_lua_module.ctx_index];
+
+    top_cscf = conf_ctx->srv_conf[ngx_stream_core_module.ctx_index];
 
     ngx_memzero(&conf, sizeof(ngx_conf_t));
 
@@ -220,15 +222,15 @@ ngx_stream_lua_init_worker(ngx_cycle_t *cycle)
 
     lscf = ngx_stream_get_module_srv_conf(s, ngx_stream_lua_module);
 
-    if (top_lscf->resolver) {
-        lscf->resolver = top_lscf->resolver;
-    }
-
     if (top_lscf->log_socket_errors != NGX_CONF_UNSET) {
         lscf->log_socket_errors = top_lscf->log_socket_errors;
     }
 
     cscf = ngx_stream_get_module_srv_conf(s, ngx_stream_core_module);
+
+    if (top_cscf->resolver) {
+        cscf->resolver = top_cscf->resolver;
+    }
 
     ngx_set_connection_log(s->connection, cscf->error_log);
 
