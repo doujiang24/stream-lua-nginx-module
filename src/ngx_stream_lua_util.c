@@ -621,7 +621,7 @@ ngx_stream_lua_finalize_real_session(ngx_stream_session_t *s, ngx_int_t rc)
                    "stream lua finalize: rc=%i", rc);
 
     if (rc == NGX_ERROR || rc == NGX_DECLINED) {
-        ngx_stream_lua_free_session(s);
+        ngx_stream_lua_free_session(s, NGX_STREAM_INTERNAL_SERVER_ERROR);
         return;
     }
 
@@ -629,14 +629,14 @@ ngx_stream_lua_finalize_real_session(ngx_stream_session_t *s, ngx_int_t rc)
 
     ctx = ngx_stream_get_module_ctx(s, ngx_stream_lua_module);
     if (ctx == NULL) {
-        ngx_stream_lua_free_session(s);
+        ngx_stream_lua_free_session(s, NGX_STREAM_OK);
         return;
     }
 
     if (rc == NGX_DONE) {   /* yield */
 
         if (ctx->done) {
-            ngx_stream_lua_free_session(s);
+            ngx_stream_lua_free_session(s, NGX_STREAM_OK);
             return;
         }
 
@@ -650,7 +650,8 @@ ngx_stream_lua_finalize_real_session(ngx_stream_session_t *s, ngx_int_t rc)
                 && !ctx->writing_raw_req_socket)
             {
                 if (ngx_del_event(c->write, NGX_WRITE_EVENT, 0) != NGX_OK) {
-                    ngx_stream_lua_free_session(s);
+                    ngx_stream_lua_free_session(s,
+                                            NGX_STREAM_INTERNAL_SERVER_ERROR);
                 }
             }
         }
@@ -665,7 +666,7 @@ ngx_stream_lua_finalize_real_session(ngx_stream_session_t *s, ngx_int_t rc)
     ctx->done = 1;
 
     if (c->error || c->timedout) {
-        ngx_stream_lua_free_session(s);
+        ngx_stream_lua_free_session(s, NGX_STREAM_INTERNAL_SERVER_ERROR);
         return;
     }
 
@@ -682,7 +683,7 @@ ngx_stream_lua_finalize_real_session(ngx_stream_session_t *s, ngx_int_t rc)
 #if 1
         if (!wev->active) {
             if (ngx_handle_write_event(wev, lscf->send_lowat) != NGX_OK) {
-                ngx_stream_lua_free_session(s);
+                ngx_stream_lua_free_session(s, NGX_STREAM_INTERNAL_SERVER_ERROR);
                 return;
             }
         }
@@ -711,7 +712,7 @@ ngx_stream_lua_finalize_real_session(ngx_stream_session_t *s, ngx_int_t rc)
 
     dd("closing connection upon successful completion");
 
-    ngx_stream_lua_free_session(s);
+    ngx_stream_lua_free_session(s, NGX_STREAM_OK);
     return;
 }
 
@@ -738,7 +739,7 @@ ngx_stream_lua_set_lingering_close(ngx_stream_session_t *s,
     ngx_add_timer(rev, lscf->lingering_timeout);
 
     if (ngx_handle_read_event(rev, 0) != NGX_OK) {
-        ngx_stream_lua_free_session(s);
+        ngx_stream_lua_free_session(s, NGX_STREAM_INTERNAL_SERVER_ERROR);
         return;
     }
 
@@ -747,7 +748,7 @@ ngx_stream_lua_set_lingering_close(ngx_stream_session_t *s,
 
     if (wev->active && (ngx_event_flags & NGX_USE_LEVEL_EVENT)) {
         if (ngx_del_event(wev, NGX_WRITE_EVENT, 0) != NGX_OK) {
-            ngx_stream_lua_free_session(s);
+            ngx_stream_lua_free_session(s, NGX_STREAM_INTERNAL_SERVER_ERROR);
             return;
         }
     }
@@ -755,7 +756,7 @@ ngx_stream_lua_set_lingering_close(ngx_stream_session_t *s,
     if (ngx_shutdown_socket(c->fd, NGX_WRITE_SHUTDOWN) == -1) {
         ngx_connection_error(c, ngx_socket_errno,
                              ngx_shutdown_socket_n " failed");
-        ngx_stream_lua_free_session(s);
+        ngx_stream_lua_free_session(s, NGX_STREAM_INTERNAL_SERVER_ERROR);
         return;
     }
 
@@ -783,7 +784,7 @@ ngx_stream_lua_lingering_close_handler(ngx_event_t *rev)
                    "stream lua lingering close handler");
 
     if (rev->timedout) {
-        ngx_stream_lua_free_session(s);
+        ngx_stream_lua_free_session(s, NGX_STREAM_INTERNAL_SERVER_ERROR);
         return;
     }
 
@@ -794,7 +795,7 @@ ngx_stream_lua_lingering_close_handler(ngx_event_t *rev)
 
     timer = (ngx_msec_t) ctx->lingering_time - (ngx_msec_t) ngx_time();
     if ((ngx_msec_int_t) timer <= 0) {
-        ngx_stream_lua_free_session(s);
+        ngx_stream_lua_free_session(s, NGX_STREAM_OK);
         return;
     }
 
@@ -805,7 +806,7 @@ ngx_stream_lua_lingering_close_handler(ngx_event_t *rev)
                        "stream lua lingering read: %d", n);
 
         if (n == NGX_ERROR || n == 0) {
-            ngx_stream_lua_free_session(s);
+            ngx_stream_lua_free_session(s, NGX_STREAM_OK);
             return;
         }
 
@@ -823,7 +824,7 @@ ngx_stream_lua_lingering_close_handler(ngx_event_t *rev)
     } while (rev->ready);
 
     if (ngx_handle_read_event(rev, 0) != NGX_OK) {
-        ngx_stream_lua_free_session(s);
+        ngx_stream_lua_free_session(s, NGX_STREAM_INTERNAL_SERVER_ERROR);
         return;
     }
 
@@ -3193,7 +3194,7 @@ ngx_stream_cleanup_add(ngx_stream_session_t *s, size_t size)
 
 
 void
-ngx_stream_lua_free_session(ngx_stream_session_t *s)
+ngx_stream_lua_free_session(ngx_stream_session_t *s, ngx_int_t rc)
 {
     ngx_stream_lua_ctx_t        *ctx;
     ngx_stream_lua_cleanup_t    *cln;
@@ -3203,7 +3204,7 @@ ngx_stream_lua_free_session(ngx_stream_session_t *s)
 
     ctx = ngx_stream_get_module_ctx(s, ngx_stream_lua_module);
     if (ctx == NULL) {
-        ngx_stream_close_connection(s->connection);
+        ngx_stream_finalize_session(s, rc);
         return;
     }
 
@@ -3218,7 +3219,7 @@ ngx_stream_lua_free_session(ngx_stream_session_t *s)
         cln = cln->next;
     }
 
-    ngx_stream_close_connection(s->connection);
+    ngx_stream_finalize_session(s, rc);
 }
 
 
