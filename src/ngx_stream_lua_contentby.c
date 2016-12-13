@@ -200,6 +200,8 @@ ngx_stream_lua_content_handler(ngx_stream_session_t *s)
                    "stream lua content handler fd:%d",
                    (int) s->connection->fd);
 
+    s->connection->log->action = "handling client connection";
+
     lscf = ngx_stream_get_module_srv_conf(s, ngx_stream_lua_module);
 
     if (lscf->content_handler == NULL) {
