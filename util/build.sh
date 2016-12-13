@@ -31,8 +31,8 @@ ngx-build $force $version \
             --add-module=$root/../echo-nginx-module \
             --add-module=$root/../memc-nginx-module \
             --add-module=$root/../headers-more-nginx-module \
-            --add-module=$root/../stream-echo-nginx-module \
             --add-module=$root $opts \
+            --add-module=$root/../stream-echo-nginx-module \
             --with-poll_module \
             --without-http_ssi_module \
             --with-debug || exit 1
