@@ -617,9 +617,6 @@ ngx_stream_lua_finalize_real_session(ngx_stream_session_t *s, ngx_int_t rc)
 
     c = s->connection;
 
-    ngx_log_debug1(NGX_LOG_DEBUG_STREAM, c->log, 0,
-                   "stream lua finalize: rc=%i", rc);
-
     if (rc == NGX_ERROR || rc == NGX_DECLINED) {
         ngx_stream_lua_free_session(s, NGX_STREAM_INTERNAL_SERVER_ERROR);
         return;
