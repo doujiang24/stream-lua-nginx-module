@@ -15,6 +15,7 @@
 #include "ngx_stream_lua_directive.h"
 #include "ngx_stream_lua_contentby.h"
 #include "ngx_stream_lua_logby.h"
+#include "ngx_stream_lua_balancer.h"
 #include "ngx_stream_lua_semaphore.h"
 #include "ngx_stream_lua_initby.h"
 #include "ngx_stream_lua_initworkerby.h"
@@ -118,6 +119,20 @@ static ngx_command_t  ngx_stream_lua_commands[] = {
       NGX_STREAM_SRV_CONF_OFFSET,
       0,
       (void *) ngx_stream_lua_log_handler_file },
+
+    { ngx_string("balancer_by_lua_block"),
+      NGX_STREAM_UPS_CONF|NGX_CONF_BLOCK|NGX_CONF_NOARGS,
+      ngx_stream_lua_balancer_by_lua_block,
+      NGX_STREAM_SRV_CONF_OFFSET,
+      0,
+      (void *) ngx_stream_lua_balancer_handler_inline },
+
+    { ngx_string("balancer_by_lua_file"),
+      NGX_STREAM_UPS_CONF|NGX_CONF_TAKE1,
+      ngx_stream_lua_balancer_by_lua,
+      NGX_STREAM_SRV_CONF_OFFSET,
+      0,
+      (void *) ngx_stream_lua_balancer_handler_file },
 
     { ngx_string("lua_max_running_timers"),
       NGX_STREAM_MAIN_CONF|NGX_CONF_TAKE1,
