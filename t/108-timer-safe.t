@@ -11,7 +11,7 @@ our $StapScript = $t::StapThread::StapScript;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 8 + 37);
+plan tests => repeat_each() * (blocks() * 8 + 45);
 
 #no_diff();
 no_long_string();
@@ -474,7 +474,7 @@ hello world
 [
 "registered timer",
 qr/\[lua\] .*? my lua timer handler/,
-qr/\[lua\] log_by_lua\(nginx\.conf:\d+\):\d+: elapsed: 0\.0(?:6[4-9]|7[0-6])/,
+qr/\[lua\] log_by_lua_block\(nginx\.conf:\d+\):\d+: elapsed: 0\.0(?:6[4-9]|7[0-6])/,
 "lua ngx.timer expired",
 "stream lua close fake stream connection"
 ]
@@ -482,7 +482,6 @@ qr/\[lua\] log_by_lua\(nginx\.conf:\d+\):\d+: elapsed: 0\.0(?:6[4-9]|7[0-6])/,
 
 
 === TEST 8: tcp cosocket in timer handler (keep-alive connections) - log_by_lua
---- ONLY
 --- stream_config eval
     "lua_package_path '$::HtmlDir/?.lua;./?.lua';"
 
