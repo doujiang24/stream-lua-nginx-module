@@ -9,7 +9,7 @@ log_level('debug');
 
 repeat_each(2);
 
-plan tests => repeat_each() * 39;
+plan tests => repeat_each() * 42;
 
 #no_diff();
 #no_long_string();
@@ -125,10 +125,8 @@ stream lua sleep timer expired
 
 
 === TEST 7: ngx.sleep unavailable in log_by_lua
-TODO
---- SKIP
 --- stream_server_config
-        echo hello;
+    echo hello;
     log_by_lua_block {
         ngx.sleep(0.1)
     }

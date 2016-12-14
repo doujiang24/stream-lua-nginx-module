@@ -435,11 +435,9 @@ qr/\[lua\] .*? my lua timer handler/,
 
 
 === TEST 7: simple at (sleep in the timer callback) - log_by_lua
-TODO
---- SKIP
 --- stream_server_config
-        echo hello world;
-        echo_sleep 0.07;
+    echo hello world;
+    echo_sleep 0.07;
     log_by_lua_block {
         local begin = ngx.now()
         local function f()
@@ -484,14 +482,13 @@ qr/\[lua\] log_by_lua\(nginx\.conf:\d+\):\d+: elapsed: 0\.0(?:6[4-9]|7[0-6])/,
 
 
 === TEST 8: tcp cosocket in timer handler (keep-alive connections) - log_by_lua
-TODO
---- SKIP
+--- ONLY
 --- stream_config eval
     "lua_package_path '$::HtmlDir/?.lua;./?.lua';"
 
 --- stream_server_config
-        echo hello;
-        echo_sleep 0.01;
+    echo hello;
+    echo_sleep 0.01;
     log_by_lua_block {
         local begin = ngx.now()
         local function f()

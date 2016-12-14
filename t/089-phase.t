@@ -51,8 +51,6 @@ content
 
 
 === TEST 4: get_phase in log_by_lua_block
-TODO
---- SKIP
 --- stream_server_config
     echo "OK";
     log_by_lua_block {
