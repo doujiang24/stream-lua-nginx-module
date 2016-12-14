@@ -170,6 +170,7 @@ struct ngx_stream_lua_main_conf_s {
 
     unsigned                             requires_access:1;
     unsigned                             requires_shm:1;
+    unsigned                             requires_log:1;
 };
 
 
@@ -193,38 +194,41 @@ typedef struct {
     ngx_str_t               ssl_crl;
 #endif
 
-    ngx_stream_lua_handler_pt           content_handler;
+    ngx_stream_lua_handler_pt    content_handler;
+    ngx_stream_lua_handler_pt    log_handler;
 
-    u_char                             *content_chunkname;
-    ngx_str_t                           content_src;    /*  content_by_lua
-                                                         *  inline script/script
-                                                         *  file path
-                                                         */
-    u_char                             *content_src_key; /* cached key for
-                                                          * content_src
-                                                          */
+    u_char                      *content_chunkname;
+    ngx_str_t                    content_src;    /*  content_by_lua
+                                                    inline script/script
+                                                    file path */
+    u_char                      *content_src_key; /* cached key for
+                                                     content_src */
 
-    ngx_flag_t                          enable_code_cache; /* whether to
-                                                            * enable
-                                                            * code cache */
+    u_char                      *log_chunkname;
+    ngx_str_t                    log_src;     /* log_by_lua inline script/script
+                                                 file path */
+    u_char                      *log_src_key; /* cached key for log_src */
 
-    ngx_flag_t                          check_client_abort;
+    ngx_flag_t                   enable_code_cache; /* whether to enable
+                                                        code cache */
 
-    ngx_msec_t                          keepalive_timeout;
-    ngx_msec_t                          connect_timeout;
-    ngx_msec_t                          send_timeout;
-    ngx_msec_t                          read_timeout;
+    ngx_flag_t                   check_client_abort;
 
-    size_t                              send_lowat;
-    size_t                              buffer_size;
+    ngx_msec_t                   keepalive_timeout;
+    ngx_msec_t                   connect_timeout;
+    ngx_msec_t                   send_timeout;
+    ngx_msec_t                   read_timeout;
 
-    ngx_uint_t                          pool_size;
+    size_t                       send_lowat;
+    size_t                       buffer_size;
 
-    ngx_flag_t                          log_socket_errors;
+    ngx_uint_t                   pool_size;
 
-    ngx_uint_t                          lingering_close;
-    ngx_msec_t                          lingering_time;
-    ngx_msec_t                          lingering_timeout;
+    ngx_flag_t                   log_socket_errors;
+
+    ngx_uint_t                   lingering_close;
+    ngx_msec_t                   lingering_time;
+    ngx_msec_t                   lingering_timeout;
 
 } ngx_stream_lua_srv_conf_t;
 

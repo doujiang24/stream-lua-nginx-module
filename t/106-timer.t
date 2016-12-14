@@ -11,7 +11,7 @@ our $StapScript = $t::StapThread::StapScript;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 8 + 49);
+plan tests => repeat_each() * (blocks() * 8 + 57);
 
 #no_diff();
 no_long_string();
@@ -520,10 +520,8 @@ qr/\[lua\] .*? my lua timer handler/,
 
 
 === TEST 9: simple at (sleep in the timer callback) - log_by_lua
-TODO
---- SKIP
 --- stream_server_config
-        echo hello world;
+    echo hello world;
     log_by_lua_block {
         local begin = ngx.now()
         local function f()
@@ -560,7 +558,7 @@ hello world
 [
 "registered timer",
 qr/\[lua\] .*? my lua timer handler/,
-qr/\[lua\] log_by_lua\(nginx\.conf:\d+\):\d+: elapsed: 0\.0(?:6[4-9]|7[0-6])/,
+qr/\[lua\] log_by_lua_block\(nginx\.conf:\d+\):\d+: elapsed: 0\.0(?:6[4-9]|7[0-6])/,
 "lua ngx.timer expired",
 "stream lua close fake stream connection"
 ]
@@ -568,12 +566,11 @@ qr/\[lua\] log_by_lua\(nginx\.conf:\d+\):\d+: elapsed: 0\.0(?:6[4-9]|7[0-6])/,
 
 
 === TEST 10: tcp cosocket in timer handler (keep-alive connections) - log_by_lua
-TODO
---- SKIP
 --- stream_config eval
     "lua_package_path '$::HtmlDir/?.lua;./?.lua';"
 
 --- stream_server_config
+    echo "hello";
     log_by_lua_block {
         local begin = ngx.now()
         local function f()
@@ -590,9 +587,6 @@ TODO
         end
         print("registered timer")
     }
-
---- config
-
 --- user_files
 >>> test.lua
 module("test", package.seeall)

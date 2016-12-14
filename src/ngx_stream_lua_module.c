@@ -14,6 +14,7 @@
 #include "ngx_stream_lua_common.h"
 #include "ngx_stream_lua_directive.h"
 #include "ngx_stream_lua_contentby.h"
+#include "ngx_stream_lua_logby.h"
 #include "ngx_stream_lua_semaphore.h"
 #include "ngx_stream_lua_initby.h"
 #include "ngx_stream_lua_initworkerby.h"
@@ -103,6 +104,20 @@ static ngx_command_t  ngx_stream_lua_commands[] = {
       NGX_STREAM_SRV_CONF_OFFSET,
       0,
       (void *) ngx_stream_lua_content_handler_file },
+
+    { ngx_string("log_by_lua_block"),
+      NGX_STREAM_MAIN_CONF|NGX_STREAM_SRV_CONF|NGX_CONF_BLOCK|NGX_CONF_NOARGS,
+      ngx_stream_lua_log_by_lua_block,
+      NGX_STREAM_SRV_CONF_OFFSET,
+      0,
+      (void *) ngx_stream_lua_log_handler_inline },
+
+    { ngx_string("log_by_lua_file"),
+      NGX_STREAM_MAIN_CONF|NGX_STREAM_SRV_CONF|NGX_CONF_TAKE1,
+      ngx_stream_lua_log_by_lua,
+      NGX_STREAM_SRV_CONF_OFFSET,
+      0,
+      (void *) ngx_stream_lua_log_handler_file },
 
     { ngx_string("lua_max_running_timers"),
       NGX_STREAM_MAIN_CONF|NGX_CONF_TAKE1,
@@ -560,14 +575,36 @@ ngx_stream_lua_lowat_check(ngx_conf_t *cf, void *post, void *data)
 static ngx_int_t
 ngx_stream_lua_init(ngx_conf_t *cf)
 {
-    ngx_int_t                   rc;
-    volatile ngx_cycle_t       *saved_cycle;
-    ngx_stream_lua_main_conf_t *lmcf;
+    ngx_int_t                    rc;
+    ngx_array_t                 *arr;
+    ngx_stream_handler_pt       *h;
+    volatile ngx_cycle_t        *saved_cycle;
+    ngx_stream_lua_main_conf_t  *lmcf;
+    ngx_stream_core_main_conf_t *cmcf;
 #ifndef NGX_LUA_NO_FFI_API
-    ngx_pool_cleanup_t         *cln;
+    ngx_pool_cleanup_t          *cln;
 #endif
 
+    cmcf = ngx_stream_conf_get_module_main_conf(cf, ngx_stream_core_module);
     lmcf = ngx_stream_conf_get_module_main_conf(cf, ngx_stream_lua_module);
+
+    dd("requires log: %d", (int) lmcf->requires_log);
+
+    if (lmcf->requires_log) {
+        arr = &cmcf->phases[NGX_STREAM_LOG_PHASE].handlers;
+        h = ngx_array_push(arr);
+        if (h == NULL) {
+            return NGX_ERROR;
+        }
+
+        if (arr->nelts > 1) {
+            h = arr->elts;
+            ngx_memmove(&h[1], h,
+                        (arr->nelts - 1) * sizeof(ngx_stream_handler_pt));
+        }
+
+        *h = ngx_stream_lua_log_handler;
+    }
 
 #ifndef NGX_LUA_NO_FFI_API
 
