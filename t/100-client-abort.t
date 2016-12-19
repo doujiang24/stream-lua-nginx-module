@@ -18,7 +18,7 @@ our $StapScript = $t::StapThread::StapScript;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 4 + 13);
+plan tests => repeat_each() * (blocks() * 4 + 15);
 
 $ENV{TEST_NGINX_RESOLVER} ||= '8.8.8.8';
 $ENV{TEST_NGINX_MEMCACHED_PORT} ||= '11211';
@@ -56,12 +56,11 @@ stream client prematurely closed connection
 
 
 === TEST 2: sleep + stop (log handler still gets called)
-TODO
---- SKIP
 --- stream_server_config
-        lua_check_client_abort on;
+    lua_check_client_abort on;
     content_by_lua_block {
         ngx.sleep(1)
+    }
     log_by_lua_block {
         ngx.log(ngx.NOTICE, "here in log by lua")
     }
@@ -75,6 +74,7 @@ delete thread 1
 --- timeout: 0.2
 --- abort
 --- stream_response
+receive stream response error: timeout
 --- no_error_log
 [error]
 --- error_log

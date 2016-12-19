@@ -29,8 +29,6 @@ worker exiting: false
 
 
 === TEST 2: content_by_lua + ngx.worker.pid
-TODO
---- SKIP
 --- stream_server_config
     content_by_lua_block {
         local pid = ngx.worker.pid()
@@ -63,8 +61,6 @@ worker pid is correct\.
 
 
 === TEST 4: init_worker_by_lua + ngx.worker.pid
-TODO
---- SKIP
 --- stream_config
     init_worker_by_lua_block {
         my_pid = ngx.worker.pid()

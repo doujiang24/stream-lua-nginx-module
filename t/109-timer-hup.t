@@ -26,7 +26,7 @@ our $StapScript = $t::StapThread::StapScript;
 
 repeat_each(2);
 
-plan tests => repeat_each() * 73;
+plan tests => repeat_each() * 81;
 
 #no_diff();
 no_long_string();
@@ -316,18 +316,15 @@ lua found 100 pending timers
 
 
 === TEST 6: HUP reload should abort pending timers (coroutine + cosocket)
-TODO
---- SKIP
 --- http_config
-    #lua_shared_dict test_dict 1m;
-
     server {
         listen 12355;
         location = /foo {
             echo 'foo';
         }
     }
-
+--- stream_config
+    lua_shared_dict test_dict 1m;
 --- stream_server_config
     content_by_lua_block {
         local stream_req = {"GET /foo HTTP/1.1", "Host: localhost:1234", "", ""}
@@ -372,6 +369,7 @@ TODO
         -- Breaks the timer
         sock:setkeepalive()
         ngx.say("ok")
+    }
 
     log_by_lua_block {
         local background_thread
@@ -403,11 +401,8 @@ TODO
             end
         end
     }
-
---- config
-    location = /foo {--- stream_response
+--- stream_response
 ok
-
 --- wait: 0.3
 --- no_error_log
 [error]
